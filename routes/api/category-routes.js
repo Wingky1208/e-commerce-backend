@@ -5,18 +5,16 @@ const { Category, Product } = require('../../models');
 
 router.get('/', async (req, res) => {
   // find all categories
-  try {
-    const categoryData = await Category.findAll({
-
-      include: [{
-        model: Product,
-        attributes: ["id", "product_name", "price", "stock", "category_id"]
-      }],
-    });
-    res.status(200).json(categoryData);
-  } catch (err) {
-    res.status(500).json(err);
-  }
+  await Category.findAll({
+    attributes: ["id", "category_name"],
+    include: [{
+      model: Product,
+      attributes: ["id", "product_name", "price", "stock", "category_id"]
+    }]
+  })
+    .then((categories) => {
+      res.json(categories);
+    })
 
   // be sure to include its associated Products
 });
@@ -77,22 +75,17 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   // delete a category by its `id` value
-  try {
-    const categoryData = await Category.destroy({
-      where: {
-        id: req.params.id,
-      },
+  await Category.destroy({
+    where: {
+      id: req.params.id,
+    },
+  })
+    .then((rmvdCategory) => {
+      res.json(`The category was removed from the database`);
+    })
+    .catch((err) => {
+      res.json(err);
     });
-
-    if (!categoryData) {
-      res.status(404).json({ message: 'No category found with that id!' });
-      return;
-    }
-
-    res.status(200).json(categoryData);
-  } catch (err) {
-    res.status(500).json(err);
-  }
 
 });
 
